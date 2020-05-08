@@ -1,0 +1,12 @@
+{
+    "title": "圖片設定",
+    "columns": [{
+        "id": "src",
+        "name": "src",
+        "type": "Input"
+      }, {
+        "id": "",
+        "name": ""
+      }
+    ]
+}

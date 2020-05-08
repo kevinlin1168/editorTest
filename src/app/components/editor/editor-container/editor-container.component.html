@@ -1,0 +1,36 @@
+<div contenteditable="true" (click)="onClick($event)" id='editor' class="neux-editor">
+  <div>示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字示範文字。  
+  </div>
+</div>
+<div id='tool' class="tool" style="display: none;">
+  test
+</div>
+<!-- <ng-container *ngIf="isShowEdit">
+  <label for="fname">src:</label>
+  <input type="text" [(ngModel)]='clickElement.src'><br><br>
+  <label for="lname">alt:</label>
+  <input type="text" [(ngModel)]='clickElement.alt'><br><br>
+  <input type="submit" value="Submit">
+</ng-container> -->
+<button (click)="fontStyle('bold')">粗體</button>
+<button (click)="fontStyle('italic')">斜體</button>
+<button (click)="fontStyle('underline')">底線</button>
+<button (click)="fontStyle('justifyCenter')">居中</button>
+<button (click)="fontStyle('justifyFull')">左右對齊</button>
+<button (click)="fontStyle('justifyLeft')">置左</button>
+<button (click)="fontStyle('justifyRight')">置右</button>
+<button (click)="fontStyle('insertOrderedList')">有序</button>
+<button (click)="fontStyle('insertUnorderedList')">無序</button>
+<button (click)="fontStyle('indent')">向內縮排</button>
+<button (click)="fontStyle('outdent')">向外縮排</button>
+<button (click)="fontStyle('createLink')">插入連結</button>
+<button (click)="fontStyle('insertImage')">插入圖片</button>
+<button (click)="fontStyle('insertTable')">插入表格</button>
+<button (click)="fontStyle('insertVideo')">插入影片</button>
+<button (click)="addRowAbove()">addRowAbove</button>
+<button (click)="addRowBelow()">addRowBelow</button>
+<button (click)="addColLeftward()">addColLeftward</button>
+<button (click)="addColRightward()">addColRightward</button>
+<button (click)="mergeTable()">mergeTable</button>
+<button (click)="unmerge()">unmerge</button>
+<br/>

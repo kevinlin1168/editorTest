@@ -1,0 +1,83 @@
+
+.neux-editor{
+    // -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    // -khtml-user-select: none;
+    // -moz-user-select: none;
+    // -ms-user-select: none;
+    // user-select: none;
+
+    height: 95%;
+
+    .neux-table  {
+        border-collapse:collapse;
+        border-spacing:0;
+        width: 100%;
+    
+        td {
+            font-family:Arial, sans-serif;
+            font-size:14px;
+            padding:10px 5px;
+            border-style:solid;
+            border-width:1px;
+            overflow:hidden;
+            word-break:normal;
+            border-color:black;
+        }
+    
+        th {
+            font-family:Arial, sans-serif;
+            font-size:14px;
+            font-weight:normal;
+            padding:10px 5px;
+            border-style:solid;
+            border-width:1px;
+            overflow:hidden;
+            word-break:normal;
+            border-color:black;
+        }
+    
+        .tg-0pky{
+            border-color:inherit;
+            text-align:left;
+            vertical-align:top
+        }
+    
+        .seleted {
+            background-color: silver;
+        }
+    }
+
+    .figure-color {
+        display: block;
+        border-color: salmon;
+        border-width: 3px;
+    }
+    
+    .neux-table {
+        user-select: none;
+    }
+    
+    .image-style-side {
+        max-width:50%;
+        float:right;
+    }
+    
+    .item-hover:hover {
+        border:2px green dashed;
+    }
+    
+    .item-seleted {
+        border:10px green dashed;
+    }
+}
+
+.tool {
+    position: absolute;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+}
