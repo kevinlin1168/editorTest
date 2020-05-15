@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, ViewEncapsulation } from '@angular/core';
 import { Observable, fromEvent } from 'rxjs';
-import { map, takeUntil, concatAll, finalize} from 'rxjs/operators';
+import { map, takeUntil, concatAll, finalize, tap} from 'rxjs/operators';
+import { style } from '@angular/animations';
 
 export interface MouseEvent {
   rowId:     number;
@@ -64,11 +65,11 @@ export class EditorContainerComponent implements OnInit {
       img.setAttribute("alt", "The Pulpit Rock");
       img.setAttribute("class", "item-hover");
       img.setAttribute("draggable", 'false');
+      img.setAttribute("style", "float: left;")
       // set fig element
       fig.setAttribute("style", `width: ${this.initImageWidth * 100}%;`);
       fig.setAttribute("class", "figure-color image-style-side");
-      // fig.setAttribute("class", "image-style-side");
-      fig.setAttribute("contenteditable", "false");
+      // fig.setAttribute("contenteditable", "false");
 
       var tool = document.createElement("div");
       fig.appendChild(img);
@@ -115,7 +116,7 @@ export class EditorContainerComponent implements OnInit {
           }
         })
     } else if (style == 'insertTable'){
-      // try to add tabel
+      // try to add table
       var range = this.getRange();
       let table = document.createElement('table');
       table.setAttribute('class', 'item-hover neux-table');
@@ -126,7 +127,6 @@ export class EditorContainerComponent implements OnInit {
       let row = table.insertRow(0); 
       let cell = row.insertCell(0);
       this.initCell(cell)
-      console.log('table', table.offsetWidth);
       cell = row.insertCell(1);
       this.initCell(cell);
       row = table.insertRow(1); 
@@ -136,7 +136,8 @@ export class EditorContainerComponent implements OnInit {
       this.initCell(cell);
 
       range.insertNode(table)
-      console.log('table', table.offsetWidth);
+
+      this.resizableGrid(table);
     } else {
       document.execCommand('insertHTML', false, '<iframe width="560" height="315" src="https://www.youtube.com/embed/FMl7GEaYwAE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>')
     }
@@ -151,6 +152,101 @@ export class EditorContainerComponent implements OnInit {
     }
     _this.resetSeleted();
   }
+
+  resizableGrid(table) {
+    var row = table.getElementsByTagName('tr')[0],
+    cols = row ? row.children : undefined;
+    if (!cols) return;
+
+    for (var i=0;i<cols.length;i++){
+      let isExist = false;
+      // TODO
+      for (let j = 0; j < cols[i].children.length; j++) {
+        if(cols[i].children[j].id == 'resize') {
+          isExist = true;
+        }
+      }
+      if (isExist) {
+        continue;
+      } else {
+        var div = this.createDiv(cols[i].offsetHeight);
+        cols[i].appendChild(div);
+        cols[i].style.position = 'relative';
+        _this.setListeners(div);
+      }
+    }
+  }
+
+  setListeners(div){
+    let pageX,curCol,nxtCol,curColWidth,nxtColWidth;
+    let editor = document.getElementById('editor');
+
+    const mouseUp = fromEvent(editor, 'mouseup');
+    const mouseMove = fromEvent(editor, 'mousemove');
+
+    let mouseDown = fromEvent(div, 'mousedown')
+      .pipe(
+        tap(e => {
+          // init 
+          curCol = e['target'].parentElement;
+          nxtCol = curCol.nextElementSibling;
+          pageX = e['pageX'];
+          curColWidth = curCol.offsetWidth
+          if (nxtCol) {
+            nxtColWidth = nxtCol.offsetWidth
+          }
+        }),
+        map(event => mouseMove.pipe(
+                                takeUntil(mouseUp),
+                                finalize(() => {
+                                  curCol = undefined;
+                                  nxtCol = undefined;
+                                  pageX = undefined;
+                                  nxtColWidth = undefined;
+                                  curColWidth = undefined;
+                                }))
+        ),
+        concatAll()
+      )
+      .subscribe((e) => {
+        if (curCol) {
+          var diffX = e['pageX'] - pageX;
+        
+          if (nxtCol) {
+            nxtCol.style.width = (nxtColWidth - (diffX))+'px';
+          }
+        
+          curCol.style.width = (curColWidth + diffX)+'px';
+        }
+      })
+    // div.addEventListener('mousedown', function (e) {
+    //   curCol = e.target.parentElement;
+    //   nxtCol = curCol.nextElementSibling;
+    //   pageX = e.pageX;
+    //   curColWidth = curCol.offsetWidth
+    //   if (nxtCol)
+    //   nxtColWidth = nxtCol.offsetWidth
+    // });
+   
+    // document.addEventListener('mousemove', function (e) {
+    //   if (curCol) {
+    //   var diffX = e.pageX - pageX;
+    
+    //   if (nxtCol)
+    //     nxtCol.style.width = (nxtColWidth - (diffX))+'px';
+    
+    //   curCol.style.width = (curColWidth + diffX)+'px';
+    //   }
+    // });
+   
+    // document.addEventListener('mouseup', function (e) { 
+    //   curCol = undefined;
+    //   nxtCol = undefined;
+    //   pageX = undefined;
+    //   nxtColWidth = undefined;
+    //   curColWidth = undefined;
+    // });
+   }
 
   resetSeleted() {
     if(_this.table) {
@@ -300,7 +396,11 @@ export class EditorContainerComponent implements OnInit {
         console.log('figure');
         this.clickElement = element;
         // element.setAttribute('style', 'width:100%');
-        document.getElementById('tool').setAttribute('style', `left:${element.offsetLeft}px; top:${element.offsetTop}px; display:block;`);
+        let tool = document.getElementById('tool');
+        // for display block
+        tool.setAttribute('style', `display:block;`);
+        // for set position
+        tool.setAttribute('style', `left:${element.offsetLeft + (element.offsetWidth / 2) - (tool.offsetWidth / 2)}px; top:${element.offsetTop - (tool.offsetHeight)}px; display:block;`);
         this.isShowEdit = true;
         break;
       } else if (tagName == 'td') {
@@ -323,11 +423,11 @@ export class EditorContainerComponent implements OnInit {
   }
 
   addRowAbove() {
-    this.addRow(this.tableSeleted.rowId+1);
+    this.addRow(this.tableSeleted.startRow);
   }
 
   addRowBelow() {
-    this.addRow(this.tableSeleted.rowId);
+    this.addRow(this.tableSeleted.startRow + 1);
   }
 
   addRow(index) {
@@ -338,7 +438,9 @@ export class EditorContainerComponent implements OnInit {
       let cell = row.insertCell(i);
       this.initCell(cell);
     }
+    this.resizableGrid(this.table);
   }
+
 
   initCell(cell) {
     cell.setAttribute('class', 'tg-0pky');
@@ -347,15 +449,49 @@ export class EditorContainerComponent implements OnInit {
     cell.innerHTML = this.defaultHtml;
   }
 
+  deleteRow() {
+    for(let i = this.tableSeleted.startRow; i <= this.tableSeleted.endRow; i++) {
+      this.table.deleteRow(this.tableSeleted.startRow);
+    }
+    this.resizableGrid(this.table);
+  }
+
+  deleteCol() {
+    for (let i = 0; i < this.table.rows.length; i++) {
+      for (let j = this.tableSeleted.startCol; j <= this.tableSeleted.endCol; j++) {
+        this.table.rows[i].deleteCell(this.tableSeleted.startCol);
+      }
+    }
+    this.resizableGrid(this.table);
+  }
+
+  createDiv(tableHeight){
+    let div = document.createElement('div');
+    div.contentEditable = 'false';
+    div.id = 'resize';
+    div.style.top = '0';
+    div.style.right = '0';
+    div.style.width = '5px';
+    div.style.position = 'absolute';
+    div.style.cursor = 'col-resize';
+    /* remove backGroundColor later */
+    // div.style.backgroundColor = 'red';
+    div.style.userSelect = 'none';
+    /* table height */
+    div.style.height = tableHeight+'px';
+    return div;
+   }
+
   addColLeftward() {
-    this.addCol(this.tableSeleted.colId + 1, this.tableSeleted.rowId);
+    this.addCol(this.tableSeleted.startCol, this.tableSeleted.startRow);
   }
 
   addColRightward() {
-    this.addCol(this.tableSeleted.colId, this.tableSeleted.rowId);
+    this.addCol(this.tableSeleted.startCol + 1, this.tableSeleted.startRow);
   }
 
   addCol(colIndex, rowIndex) {
+    console.log('colIndex', colIndex, 'rowIndex', rowIndex)
     for (var i = 0; i < this.table.rows.length; i++) {
       let cell = this.table.rows[i].insertCell(colIndex);
       cell.setAttribute('class', 'tg-0pky');
@@ -363,6 +499,7 @@ export class EditorContainerComponent implements OnInit {
       cell.setAttribute('rowspan', '1');
       cell.innerHTML = '<div>文字</div>';
     }
+    this.resizableGrid(this.table);
   }
 
   mergeTable() {
@@ -411,9 +548,9 @@ export class EditorContainerComponent implements OnInit {
       for(let i = this.tableSeleted.startRow; i <= this.tableSeleted.endRow; i++) {
         for(let j = this.tableSeleted.startCol; j <= this.tableSeleted.endCol; j++) {
           let cell = this.table.rows[i].cells[j];
+          cell.setAttribute('style', 'position: relative;')
           cell.setAttribute('rowspan', '1');
           cell.setAttribute('colspan', '1');
-          cell.setAttribute('style', 'tg-0pky')
         }
       }
     }

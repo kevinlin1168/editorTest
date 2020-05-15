@@ -59,8 +59,9 @@
     }
     
     .image-style-side {
-        max-width:50%;
-        float:right;
+        max-width:100%;
+        position: relative;
+        // float:left;
     }
     
     .item-hover:hover {
