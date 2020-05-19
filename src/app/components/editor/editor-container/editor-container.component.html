@@ -3,15 +3,11 @@
   </div>
 </div>
 <div id='tool' class="tool" style="display: none;">
-  test
+  <app-image-toolbar *ngIf="selectComponent == toolbarEnum.IMG"></app-image-toolbar>
+  <app-table-toolbar *ngIf="selectComponent == toolbarEnum.TABLE" (addRowAbove)="addRowAbove()"
+  (addRowBelow)="addRowBelow()" (addColLeftward)="addColLeftward()" (addColRightward)="addColRightward()"
+  (mergeTable)="mergeTable()" (unmerge)="unmerge()" (deleteRow)="deleteRow()" (deleteCol)="deleteCol()"></app-table-toolbar>
 </div>
-<!-- <ng-container *ngIf="isShowEdit">
-  <label for="fname">src:</label>
-  <input type="text" [(ngModel)]='clickElement.src'><br><br>
-  <label for="lname">alt:</label>
-  <input type="text" [(ngModel)]='clickElement.alt'><br><br>
-  <input type="submit" value="Submit">
-</ng-container> -->
 <button (click)="fontStyle('bold')">粗體</button>
 <button (click)="fontStyle('italic')">斜體</button>
 <button (click)="fontStyle('underline')">底線</button>
@@ -27,12 +23,4 @@
 <button (click)="fontStyle('insertImage')">插入圖片</button>
 <button (click)="fontStyle('insertTable')">插入表格</button>
 <button (click)="fontStyle('insertVideo')">插入影片</button>
-<button (click)="addRowAbove()">addRowAbove</button>
-<button (click)="addRowBelow()">addRowBelow</button>
-<button (click)="addColLeftward()">addColLeftward</button>
-<button (click)="addColRightward()">addColRightward</button>
-<button (click)="mergeTable()">mergeTable</button>
-<button (click)="unmerge()">unmerge</button>
-<button (click)="deleteRow()">deleteRow</button>
-<button (click)="deleteCol()">deleteCol</button>
 <br/>

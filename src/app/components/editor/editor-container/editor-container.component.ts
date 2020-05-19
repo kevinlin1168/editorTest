@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, ViewEncapsulation } from '@angular/core';
 import { Observable, fromEvent } from 'rxjs';
 import { map, takeUntil, concatAll, finalize, tap} from 'rxjs/operators';
-import { style } from '@angular/animations';
+import { Toolbar } from './toolbarEnum'
 
 export interface MouseEvent {
   rowId:     number;
@@ -41,6 +41,9 @@ export class EditorContainerComponent implements OnInit {
   private tableMouseDown: MouseEvent;
   private tableMouseUp: MouseEvent;
   private tableSeleted;
+  private selectComponent;
+  public toolbarEnum = Toolbar;
+
   constructor(public changeDetectorRef:ChangeDetectorRef) { }
 
   ngOnInit() {
@@ -366,15 +369,10 @@ export class EditorContainerComponent implements OnInit {
     while(element) {
       let tagName = element.tagName.toLowerCase();
       if(tagName == 'figure') {
-        console.log('figure');
         this.clickElement = element;
-        // element.setAttribute('style', 'width:100%');
         let tool = document.getElementById('tool');
-        // for display block
-        tool.setAttribute('style', `display:block;`);
-        // for set position
-        tool.setAttribute('style', `left:${element.offsetLeft + (element.offsetWidth / 2) - (tool.offsetWidth / 2)}px; top:${element.offsetTop - (tool.offsetHeight)}px; display:block;`);
-        this.isShowEdit = true;
+        this.setToolbar(tool, element);
+        this.selectComponent = this.toolbarEnum.IMG;
         break;
       } else if (tagName == 'td') {
         this.cellIndex = element.cellIndex;
@@ -383,16 +381,46 @@ export class EditorContainerComponent implements OnInit {
         this.rowIndex = element.rowIndex;
         element = element.parentNode;
       } else if (tagName == 'table') {
-        // document.getElementById('tool').setAttribute('style', `left:${element.offsetLeft}px; top:${element.offsetTop}px; display:block;`);
+        let tool = document.getElementById('tool');
+        this.setToolbar(tool, element);
+        this.selectComponent = this.toolbarEnum.TABLE;
         this.table = element;
         break;
       } else if (tagName == 'html'){
         document.getElementById('tool').setAttribute('style', `display:none;`)
+        this.selectComponent = null;
         break;
       } else {
         element = element.parentNode;
       }
     }
+  }
+
+  setToolbar(tool, element) {
+    tool.setAttribute('style', `display:block;`);
+    while(tool.offsetParent === null) {
+      ;
+    }
+    this.setToolbarPosition(tool, element);
+  }
+
+  setToolbarPosition(tool, element) {
+    tool.setAttribute('style', `left:${element.offsetLeft + (element.offsetWidth / 2) - (tool.offsetWidth / 2)}px; top:${element.offsetTop - (tool.offsetHeight)}px; display:block;`);
+    if (!this.isElementInViewport(tool)) {
+      tool.setAttribute('style', `left:${element.offsetLeft + (element.offsetWidth / 2) - (tool.offsetWidth / 2)}px; top:${element.offsetTop + element.offsetHeight}px; display:block;`);
+    }
+  }
+
+
+  isElementInViewport (element) { 
+    let rect = element.getBoundingClientRect();
+
+    return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && /* or $(window).height() */
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth) /* or $(window).width() */
+    );
   }
 
   addRowAbove() {
@@ -426,6 +454,8 @@ export class EditorContainerComponent implements OnInit {
       let cell = row.insertCell(i);
       this.initCell(cell);
     }
+    let tool = document.getElementById('tool');
+    this.setToolbarPosition(tool, this.table);
   }
 
 
