@@ -178,7 +178,7 @@ export class EditorContainerComponent implements OnInit {
   }
 
   setListeners(div){
-    let pageX,curCol,nxtCol,curColWidth,nxtColWidth;
+    let pageX,curCol,nxtCol,curColWidth,nxtColWidth,tableWidth;
     let editor = document.getElementById('editor');
 
     const mouseUp = fromEvent(editor, 'mouseup');
@@ -191,9 +191,10 @@ export class EditorContainerComponent implements OnInit {
           curCol = e['target'].parentElement;
           nxtCol = curCol.nextElementSibling;
           pageX = e['pageX'];
-          curColWidth = curCol.offsetWidth
+          curColWidth = curCol.offsetWidth;
+          tableWidth = curCol.parentElement.offsetWidth;
           if (nxtCol) {
-            nxtColWidth = nxtCol.offsetWidth
+            nxtColWidth = nxtCol.offsetWidth;
           }
         }),
         map(event => mouseMove.pipe(
@@ -211,41 +212,13 @@ export class EditorContainerComponent implements OnInit {
       .subscribe((e) => {
         if (curCol) {
           var diffX = e['pageX'] - pageX;
-        
           if (nxtCol) {
-            nxtCol.style.width = (nxtColWidth - (diffX))+'px';
+            nxtCol.style.width = (nxtColWidth - (diffX)) / tableWidth * 100+'%';
           }
         
-          curCol.style.width = (curColWidth + diffX)+'px';
+          curCol.style.width = (curColWidth + diffX) / tableWidth * 100+'%';
         }
       })
-    // div.addEventListener('mousedown', function (e) {
-    //   curCol = e.target.parentElement;
-    //   nxtCol = curCol.nextElementSibling;
-    //   pageX = e.pageX;
-    //   curColWidth = curCol.offsetWidth
-    //   if (nxtCol)
-    //   nxtColWidth = nxtCol.offsetWidth
-    // });
-   
-    // document.addEventListener('mousemove', function (e) {
-    //   if (curCol) {
-    //   var diffX = e.pageX - pageX;
-    
-    //   if (nxtCol)
-    //     nxtCol.style.width = (nxtColWidth - (diffX))+'px';
-    
-    //   curCol.style.width = (curColWidth + diffX)+'px';
-    //   }
-    // });
-   
-    // document.addEventListener('mouseup', function (e) { 
-    //   curCol = undefined;
-    //   nxtCol = undefined;
-    //   pageX = undefined;
-    //   nxtColWidth = undefined;
-    //   curColWidth = undefined;
-    // });
    }
 
   resetSeleted() {
@@ -423,7 +396,22 @@ export class EditorContainerComponent implements OnInit {
   }
 
   addRowAbove() {
+    let cellWidth = [];
+    if(this.tableSeleted.startRow == 0) {
+      let cellList = this.table.rows[0].cells;
+      
+      for (let i = 0; i < cellList.length; i++) {
+        cellWidth.push(cellList[i].offsetWidth);
+        cellList[i].removeChild(document.getElementById('resize'));
+        cellList[i].removeAttribute('style');
+      }
+    }
     this.addRow(this.tableSeleted.startRow);
+
+    if(this.tableSeleted.startRow == 0) {
+      this.resetRowWidth(cellWidth);
+      this.resizableGrid(this.table);
+    }
   }
 
   addRowBelow() {
@@ -438,7 +426,6 @@ export class EditorContainerComponent implements OnInit {
       let cell = row.insertCell(i);
       this.initCell(cell);
     }
-    this.resizableGrid(this.table);
   }
 
 
@@ -450,10 +437,29 @@ export class EditorContainerComponent implements OnInit {
   }
 
   deleteRow() {
-    for(let i = this.tableSeleted.startRow; i <= this.tableSeleted.endRow; i++) {
+    // TODO if startRow == 0 width
+    let cellWidth = [];
+    if (this.tableSeleted.startRow == 0) {
+      let cellList = this.table.rows[0].cells;
+      
+      for (let i = 0; i < cellList.length; i++) {
+        cellWidth.push(cellList[i].offsetWidth);
+      }
+    }
+    for (let i = this.tableSeleted.startRow; i <= this.tableSeleted.endRow; i++) {
       this.table.deleteRow(this.tableSeleted.startRow);
     }
+    if (this.tableSeleted.startRow == 0) {
+      this.resetRowWidth(cellWidth);
+    }
     this.resizableGrid(this.table);
+  }
+
+  resetRowWidth(cellWidth) {
+    let cellList = this.table.rows[0].cells;
+    for (let i = 0; i < cellList.length; i++) {
+      cellList[i].style.width = cellWidth[i] / this.table.offsetWidth * 100 + '%';
+    }
   }
 
   deleteCol() {
